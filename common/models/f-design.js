@@ -110,7 +110,7 @@ module.exports = function (Fdesign) {
     Fdesign.GetBaseInfo = function (cb) {
         EWTRACE("GetBaseInfo Begin");
 
-        var bsSQL = "select baseId,baseName,Gender from cd_baseVersion";
+        var bsSQL = "select baseId,baseName,Gender from cd_baseVersion where status = 1";
 
         DoSQL(bsSQL).then(function (result) {
 
