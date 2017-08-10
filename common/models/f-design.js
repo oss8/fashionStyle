@@ -23,7 +23,7 @@ module.exports = function (Fdesign) {
         var _B_detailVersion = {};
         pv.push(ExecuteSyncSQLResult(bsSQL, _B_detailVersion));
 
-        bsSQL = "select name, concat(publicId,'.png') as file from cd_publicImage";
+        bsSQL = "select name, concat('pattern_',publicId,'.png') as file from cd_publicImage";
         var _publicImage = {};
         pv.push(ExecuteSyncSQLResult(bsSQL, _publicImage));
 
