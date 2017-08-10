@@ -1,0 +1,34 @@
+[2017-06-09 11:22:54.783] [INFO] DEBUG_BULIDING:: - SELECT floor FROM bm_companyfloor where companyid in (select companyid from bm_companyusers where userid = '18958064659')
+[2017-06-09 11:23:13.985] [INFO] DEBUG_BULIDING:: - AddCompanyVisitor Begin
+[2017-06-09 11:23:13.986] [INFO] DEBUG_BULIDING:: - select usp_NewRandomNumber(8) as Random_Number
+[2017-06-09 11:23:13.987] [INFO] DEBUG_BULIDING:: - select companyid,userid,username from bm_companyusers where userid = '18958064659'
+[2017-06-09 11:23:13.989] [INFO] DEBUG_BULIDING:: - SELECT floor FROM bm_companyfloor where companyid in (select companyid from bm_companyusers where userid = '18958064659')
+[2017-06-09 11:23:25.933] [INFO] DEBUG_BULIDING:: - insert into bm_visitor(companyid,userid,username,visitorid,visitorname,addtime,invitetime,status,floor,random) values('123','18958064659','summerge','','128',now(),'2017-06-09',0,'1-2-3','03364965');select * from bm_visitor where random = '03364965' and status = 0
+[2017-06-09 11:23:25.958] [INFO] DEBUG_BULIDING:: - AddCompanyVisitor End
+[2017-06-12 17:19:49.729] [INFO] DEBUG_BULIDING:: - CompanyMembers Begin
+[2017-06-12 17:19:49.734] [INFO] DEBUG_BULIDING:: - select userid,username,ismanager,headimg from bm_companyusers where companyid = 'undefined' and userid = '18958064659' and status = 0 and ismanager = 1
+[2017-06-12 17:19:49.757] [INFO] DEBUG_BULIDING:: - CompanyMembers End
+[2017-06-12 17:20:10.664] [INFO] DEBUG_BULIDING:: - CompanyMembers Begin
+[2017-06-12 17:20:10.664] [INFO] DEBUG_BULIDING:: - select userid,username,ismanager,headimg from bm_companyusers where companyid = '123' and userid = '18958064659' and status = 0 and ismanager = 1
+[2017-06-12 17:20:10.689] [INFO] DEBUG_BULIDING:: - CompanyMembers End
+[2017-06-12 17:21:55.445] [INFO] DEBUG_BULIDING:: - CompanyMembers Begin
+[2017-06-12 17:21:55.446] [INFO] DEBUG_BULIDING:: - select userid,username,ismanager,headimg from bm_companyusers where companyid = '123' and status = 0 and 1 = (select ismananger from bm_companyusers where companyid = '123' and userid = '18958064659')
+[2017-06-12 17:21:55.459] [INFO] DEBUG_BULIDING:: - CompanyMembers End
+[2017-06-12 17:23:14.466] [INFO] DEBUG_BULIDING:: - CompanyMembers Begin
+[2017-06-12 17:23:14.466] [INFO] DEBUG_BULIDING:: - select userid,username,ismanager,headimg from bm_companyusers where companyid = '123' and status = 0 and 1 = (select ismanager from bm_companyusers where companyid = '123' and userid = '18958064659')
+[2017-06-12 17:23:14.478] [INFO] DEBUG_BULIDING:: - CompanyMembers End
+[2017-06-12 17:23:21.817] [INFO] DEBUG_BULIDING:: - CompanyMembers Begin
+[2017-06-12 17:23:21.817] [INFO] DEBUG_BULIDING:: - select userid,username,ismanager,headimg from bm_companyusers where companyid = '123' and status = 0 and 1 = (select ismanager from bm_companyusers where companyid = '123' and userid = '13857194279')
+[2017-06-12 17:23:21.828] [INFO] DEBUG_BULIDING:: - CompanyMembers End
+[2017-06-12 20:25:58.486] [INFO] DEBUG_BULIDING:: - GetRQCode Begin
+[2017-06-13 20:08:07.861] [INFO] DEBUG_BULIDING:: - GetTicket Begin
+[2017-06-15 15:46:57.919] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 15:47:43.557] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 15:54:58.791] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 15:56:02.513] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 15:56:28.493] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 15:57:50.669] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 15:58:27.102] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 15:58:34.163] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 15:59:01.433] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin
+[2017-06-15 16:01:36.679] [INFO] DEBUG_BULIDING:: - GetTypeversionResources Begin

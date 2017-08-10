@@ -1,0 +1,14 @@
+{
+    "appenders": [
+    { 
+        "type": "console" 
+    }, 
+    {
+      "type": "file", 
+      "filename": "./logs/log4js.log", 
+      "maxLogSize": 8192,
+      "backups":3,
+      "category": "DEBUG_BULIDING::" 
+    }
+    ]
+}
