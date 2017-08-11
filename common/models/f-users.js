@@ -33,7 +33,6 @@ module.exports = function (Fusers) {
                     cb(null, { status: 1, "result": "" });
                 }, function (err) {
                     cb(null, { status: 0, "result": err.message });
-                    EWTRACE("sendRegCode End");
                 })
 
                 EWTRACE("sendRegCode End");

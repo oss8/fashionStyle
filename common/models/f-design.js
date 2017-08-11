@@ -4,7 +4,6 @@ module.exports = function (Fdesign) {
 
     var app = require('../../server/server');
     app.DisableSystemMethod(Fdesign);
-    var colors = require('color');
     var _ = require('underscore');
 
     Fdesign.GetTypeversionResources = function (baseInfo, cb) {
