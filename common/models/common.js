@@ -299,7 +299,23 @@ module.exports = function (common) {
     }
 
 
+    getWeChatToken = function (userId) {
 
+        var jwt = require('jsonwebtoken');
+        var rf = require("fs");
+        var cert = rf.readFileSync("jwt_rsa_private_key.pem", "utf-8");
+
+        return new Promise(function (resolve, reject) {
+            jwt.sign(userId, cert, { algorithm: 'RS256', expiresIn: '15d' }, function (err, token) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(token);
+                }
+            });
+        });
+
+    }
 
     getJWT = function (userId) {
 

@@ -51,7 +51,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '发送认证码',
-            accepts: { arg: 'userInfo', type: 'object', description: '{"mobile":""}' },
+            accepts: { arg: 'userInfo', type: 'object', http: { source: 'body' }, description: '{"mobile":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -69,7 +69,7 @@ module.exports = function (Fusers) {
             pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
             var UserAddress = {};
-            bsSQL = "select id,address,isdefault from cd_useraddress where id in (select id from cd_users where mobile = '" + userInfo.mobile + "' and password = '" + userInfo.password + "'";
+            bsSQL = "select id,address,isdefault from cd_useraddress where id in (select id from cd_users where mobile = '" + userInfo.mobile + "' and password = '" + userInfo.password + "')";
             pv.push(ExecuteSyncSQLResult(bsSQL, UserAddress));
         }
         else {
@@ -77,7 +77,7 @@ module.exports = function (Fusers) {
             pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
             var UserAddress = {};
-            bsSQL = "select id,address,isdefault from cd_useraddress where id in (select id,mobile,name,lastLogintime,password from cd_users where openid = '" + userInfo.openId + "'";
+            bsSQL = "select id,address,isdefault from cd_useraddress where id in (select id from cd_users where openid = '" + userInfo.openId + "')";
             pv.push(ExecuteSyncSQLResult(bsSQL, UserAddress));
         }
 
@@ -96,7 +96,15 @@ module.exports = function (Fusers) {
                     if (_.isNull(UserInfo.Result[0].lastLogintime)) {
                         UserInfo.Result[0].isNew = true;
                     }
-                    cb(null, { status: 1, "result": UserInfo.Result[0] });
+
+                    getWeChatToken(UserInfo.Result[0]).then(function (resultToken) {
+                        var _result = {};
+                        _result.UserInfo = UserInfo.Result[0];
+                        _result.address = [];
+                        _result.token = resultToken;
+
+                        cb(null, { status: 1, "result": _result });
+                    });
 
                 }, function (err) {
                     cb(err, { status: 0, "result": "" });
@@ -115,11 +123,15 @@ module.exports = function (Fusers) {
 
                     result[0].isNew = isNew;
 
-                    var _result = {};
-                    _result.UserInfo = result[0];
-                    _result.address = UserAddress.Result;
+                    getWeChatToken(result[0]).then(function (resultToken) {
+                        var _result = {};
+                        _result.UserInfo = result[0];
+                        _result.address = UserAddress.Result;
+                        _result.token = resultToken;
+                        cb(null, { status: 1, "result": _result });
+                    });
 
-                    cb(null, { status: 1, "result": _result });
+
 
                 }, function (err) {
                     cb(err, { status: 0, "result": "" });
@@ -135,25 +147,37 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '用户注册',
-            accepts: { arg: 'userInfo', type: 'object', root: true, description: '{"mobile":"","password":"","openId":""}' },
+            accepts: { arg: 'userInfo', type: 'object', http: { source: 'body' }, description: '{"mobile":"","password":"","openId":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
 
-    Fusers.userModify = function (userInfo, cb) {
+    Fusers.userModify = function (userInfo, token, cb) {
         EWTRACE("userModify Begin");
 
-        var bsSQL = "udpate cd_users set ";
+
+        var _openid = null;
+        var OpenID = {};
+        try {
+            OpenID = GetOpenIDFromToken(token);
+            _openid = OpenID.id;
+        } catch (err) {
+            cb(null, { status: 403, "result": "" });
+            return;
+        }
+
+
+        var bsSQL = "update cd_users set ";
         if (!_.isUndefined(userInfo.mobile)) {
             bsSQL += " mobile = '" + userInfo.mobile + "',";
         }
         if (!_.isUndefined(userInfo.headimage)) {
-            bsSQL += " mobile = '" + userInfo.headimage + "',";
+            bsSQL += " headimage = '" + userInfo.headimage + "',";
         }
         if (!_.isUndefined(userInfo.name)) {
-            bsSQL += " mobile = '" + userInfo.name + "',";
+            bsSQL += " name = '" + userInfo.name + "',";
         }
-        bsSQL += "lastLogintime = now() where id = " + userInfo.id;
+        bsSQL += "lastLogintime = now() where id = " + _openid;
 
         DoSQL(bsSQL).then(function (result) {
 
@@ -168,7 +192,18 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '用户修改信息',
-            accepts: { arg: 'userInfo', type: 'object', root: true, description: '{"id":"","mobile":"","headimage":"","name":""}' },
+            accepts: [{
+                arg: 'UserInfo', type: 'object',
+                http: { source: 'body' },
+                description: '{"mobile":"15868177542","headimage":"https://mp.weixin.qq.com/cgi-bin/settingpage?t=setting/index&action=index&token=1346104615&lang=zh_CN","name":"朱哥"}'
+            }, {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            }],
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -197,7 +232,7 @@ module.exports = function (Fusers) {
             }
 
 
-            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64'); +"',now(),'" + UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")'," + orderInfo.height + ",'" + orderInfo.color + "','" + orderInfo.orderType + "',0,'"+orderInfo.size+"','"+orderInfo.address+"',"+orderInfo.zipCode+",'"+orderInfo.finishImage+"')";
+            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64'); +"',now(),'" + UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")'," + orderInfo.height + ",'" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.size + "','" + orderInfo.address + "'," + orderInfo.zipCode + ",'" + orderInfo.finishImage + "')";
 
             DoSQL(bsSQL).then(function () {
                 cb(null, { status: 1, "result": "" });
@@ -216,7 +251,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '保存用户设计',
-            accepts: { arg: 'orderInfo', root: true, type: 'object', root: true, description: '{"userId":"","gender":"","baseId":"","styleContext":"","height":170,"color":"#FFFFFF","orderType":"Check/Share","size":"","address":"","zipCode":"","finishImage":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"userId":"","gender":"","baseId":"","styleContext":"","height":170,"color":"#FFFFFF","orderType":"Check/Share","size":"","address":"","zipCode":"","finishImage":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -240,10 +275,10 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '点赞',
-            accepts: { arg: 'orderInfo', root: true, type: 'object', root: true, description: '{"orderId":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"orderId":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
-    );    
+    );
 
     Fusers.requestOrders = function (orderInfo, cb) {
         EWTRACE("requestOrders Begin");
@@ -251,9 +286,9 @@ module.exports = function (Fusers) {
         var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders where userid = '" + orderInfo.userid + "' order by adddate desc;";
 
         DoSQL(bsSQL).then(function (result) {
-            result.forEach(function(item){
+            result.forEach(function (item) {
                 item.styleContext = Buffer(item.Context, 'base64').toString();
-                
+
             })
 
             cb(null, { status: 1, "result": result });
@@ -269,7 +304,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询用户订单',
-            accepts: { arg: 'orderInfo', root: true, type: 'object', root: true, description: '{"userId":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"userId":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -280,10 +315,10 @@ module.exports = function (Fusers) {
         var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders where id = '" + orderInfo.userid + "'";
 
         DoSQL(bsSQL).then(function (result) {
-            result.forEach(function(item){
+            result.forEach(function (item) {
                 item.styleContext = Buffer(item.Context, 'base64').toString();
-                
-            })            
+
+            })
             cb(null, { status: 1, "result": result });
         }, function (err) {
             cb(err, { status: 0, "result": "" });
@@ -297,7 +332,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '根据单号查询单据',
-            accepts: { arg: 'orderInfo', root: true, type: 'object', root: true, description: '{"id":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"id":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -308,10 +343,10 @@ module.exports = function (Fusers) {
         var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders order by praise desc limit 10;";
 
         DoSQL(bsSQL).then(function (result) {
-            result.forEach(function(item){
+            result.forEach(function (item) {
                 item.styleContext = Buffer(item.Context, 'base64').toString();
-                
-            })            
+
+            })
             cb(null, { status: 1, "result": result });
         }, function (err) {
             cb(err, { status: 0, "result": "" });
@@ -324,15 +359,17 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询排名前10单据',
-            accepts: { arg: 'orderInfo', root: true, type: 'object', root: true, description: '{"id":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"id":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
-    );   
-    
-    Fusers.requestSquareDesign = function ( cb) {
+    );
+
+    Fusers.requestSquareDesign = function (orderInfo, cb) {
         EWTRACE("requestOrdersFromDesign Begin");
 
-        var bsSQL = "select a.id,a.mobile,a.name,a.headimage from cd_users a, (select userid from cd_tstyleorders order by praise desc limit 10) t where a.id = t.userid";
+        var begin = (orderInfo.pageIndex - 1) * 10 + 1;
+
+        var bsSQL = "select a.id,a.mobile,a.name,a.headimage from cd_users a, (select userid from cd_tstyleorders order by praise desc limit 10) t where a.id = t.userid limit " + begin + ",10";
 
         DoSQL(bsSQL).then(function (result) {
             cb(null, { status: 1, "result": result });
@@ -347,10 +384,11 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询设计师排名',
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"pageIndex":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
-    ); 
-    
+    );
+
     Fusers.requestDesignOrders = function (orderInfo, cb) {
         EWTRACE("requestDesignOrders Begin");
 
@@ -368,10 +406,10 @@ module.exports = function (Fusers) {
 
             var _result = _.union(praiseList.Result, newList.Result);
 
-            _result.forEach(function(item){
+            _result.forEach(function (item) {
                 item.styleContext = Buffer(item.Context, 'base64').toString();
-                
-            })            
+
+            })
             cb(null, { status: 1, "result": _result });
         }, function (err) {
             cb(err, { status: 0, "result": "" });
@@ -384,10 +422,10 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询设计师订单',
-            accepts: { arg: 'orderInfo', root: true, type: 'object', root: true, description: '{"userId":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"userId":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
-    );    
+    );
 
     Fusers.addUseraddress = function (userInfo, cb) {
         EWTRACE("addUseraddress Begin");
@@ -431,7 +469,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '保存用户收货地址',
-            accepts: { arg: 'userInfo', root: true, type: 'object', root: true, description: '{"userId":"","address":"","isDefault":"true"}' },
+            accepts: { arg: 'userInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"userId":"","address":"","isDefault":"true"}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
