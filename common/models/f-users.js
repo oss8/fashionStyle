@@ -56,6 +56,48 @@ module.exports = function (Fusers) {
         }
     );
 
+    Fusers.GetUserInfo = function (token, cb) {
+        EWTRACE("GetUserInfo Begin");
+
+        try{
+            var _info = GetOpenIDFromToken(token);
+            var bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
+            DoSQL(bsSQL).then(function (UserInfo) {
+    
+                getWeChatToken(UserInfo[0]).then(function (resultToken) {
+                    var _result = {};
+                    _result.UserInfo = UserInfo[0];
+                    _result.token = resultToken;
+    
+                    cb(null, { status: 1, "result": _result });
+                });
+            }, function (err) {
+                cb(null, { status: 0, "result": "" });
+            });
+        }
+        catch(err){
+            cb(null, { status: 0, "result": "" });
+        }
+
+    }
+
+    Fusers.remoteMethod(
+        'GetUserInfo',
+        {
+            http: { verb: 'post' },
+            description: '发送认证码',
+            accepts: {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            },
+            returns: { arg: 'userInfo', type: 'object', root: true }
+        }
+    );
+
 
     Fusers.userLogin = function (userInfo, cb) {
         EWTRACE("userLogin Begin");
@@ -65,7 +107,7 @@ module.exports = function (Fusers) {
         var bsSQL = "";
 
         if (!_.isUndefined(userInfo.mobile)) {
-            bsSQL = "select id,mobile,name,lastLogintime,password from cd_users where mobile = '" + userInfo.mobile + "' and password = '" + userInfo.password + "'";
+            bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + userInfo.mobile + "' and password = '" + userInfo.password + "'";
             pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
             var UserAddress = {};
@@ -73,7 +115,7 @@ module.exports = function (Fusers) {
             pv.push(ExecuteSyncSQLResult(bsSQL, UserAddress));
         }
         else {
-            bsSQL = "select id,mobile,name,lastLogintime,password from cd_users where openid = '" + userInfo.openId + "'";
+            bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where openid = '" + userInfo.openId + "'";
             pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
             var UserAddress = {};
@@ -117,7 +159,7 @@ module.exports = function (Fusers) {
                     bsSQL += "insert into cd_users(openid,lastLogintime) values('" + userInfo.openId + "',now());";
                     isNew = true;
                 }
-                bsSQL += "select id,mobile,name,lastLogintime,password from cd_users where openid = '" + userInfo.openId + "';";
+                bsSQL += "select id,mobile,name,lastLogintime,password,headImage from cd_users where openid = '" + userInfo.openId + "';";
                 bsSQL += "update cd_users set lastLogintime = now() where openid = '" + userInfo.openId + "';";
                 DoSQL(bsSQL).then(function (result) {
 
