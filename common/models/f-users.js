@@ -115,7 +115,7 @@ module.exports = function (Fusers) {
                 var secretKey = 'H-NzWzl3riHIntwj9KBFj3TmG_zPttLfd-EcPlKq';
                 var mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
                 var options = {
-                    scope: 'if-pbl',
+                    scope: 'tstyle',
                 };
                 var putPolicy = new qiniu.rs.PutPolicy(options);
                 var uploadToken = putPolicy.uploadToken(mac);
