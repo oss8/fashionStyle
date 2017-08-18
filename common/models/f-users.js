@@ -254,7 +254,7 @@ module.exports = function (Fusers) {
         EWTRACE("paymentOrders Begin");
 
 
-            bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = " + orderInfo.zipCode + ", status = 'payment' where id = " + orderInfo.orderId;
+            bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "', status = 'payment' where id = " + orderInfo.orderId;
 
             DoSQL(bsSQL).then(function () {
                 cb(null, { status: 1, "result": "" });
