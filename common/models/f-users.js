@@ -300,7 +300,7 @@ module.exports = function (Fusers) {
 
             var title = UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")";
 
-            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status,fee) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64') +"',now(),'" + title + "'," + orderInfo.height + ",'" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.size + "','" + orderInfo.address + "','" + orderInfo.zipCode + "','" + orderInfo.finishImage + "','new',"+BaseTypeInfo.Result[0].fee+");";
+            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status,fee) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64') +"',now(),'" + title + "','" + orderInfo.height + "','" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.height + "','" + orderInfo.address + "','" + orderInfo.zipCode + "','" + orderInfo.finishImage + "','new',"+BaseTypeInfo.Result[0].fee+");";
 
             bsSQL += "select id as orderId,fee from cd_TstyleOrders where id = LAST_INSERT_ID() order by id desc limit 1;";
 
