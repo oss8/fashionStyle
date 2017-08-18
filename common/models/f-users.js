@@ -59,23 +59,23 @@ module.exports = function (Fusers) {
     Fusers.GetUserInfo = function (token, cb) {
         EWTRACE("GetUserInfo Begin");
 
-        try{
+        try {
             var _info = GetOpenIDFromToken(token);
             var bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
             DoSQL(bsSQL).then(function (UserInfo) {
-    
+
                 getWeChatToken(UserInfo[0]).then(function (resultToken) {
                     var _result = {};
                     _result.UserInfo = UserInfo[0];
                     _result.token = resultToken;
-    
+
                     cb(null, { status: 1, "result": _result });
                 });
             }, function (err) {
                 cb(null, { status: 0, "result": "" });
             });
         }
-        catch(err){
+        catch (err) {
             cb(null, { status: 0, "result": "" });
         }
 
@@ -83,6 +83,56 @@ module.exports = function (Fusers) {
 
     Fusers.remoteMethod(
         'GetUserInfo',
+        {
+            http: { verb: 'post' },
+            description: '发送认证码',
+            accepts: {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            },
+            returns: { arg: 'userInfo', type: 'object', root: true }
+        }
+    );
+
+    Fusers.GetQinniuToken = function (token, cb) {
+        EWTRACE("GetUserInfo Begin");
+
+        try {
+            var _info = GetOpenIDFromToken(token);
+            var bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
+            DoSQL(bsSQL).then(function (UserInfo) {
+                if (UserInfo.length == 0) {
+                    cb(null, { status: 0, "result": "" });
+                    return;
+                }
+
+                var accessKey = 'vDgqA_Gu6Vpz3eY--7_IQVoBQ8LE13y37rpM_GKS';
+                var secretKey = 'H-NzWzl3riHIntwj9KBFj3TmG_zPttLfd-EcPlKq';
+                var mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+                var options = {
+                    scope: bucket,
+                };
+                var putPolicy = new qiniu.rs.PutPolicy(options);
+                var uploadToken = putPolicy.uploadToken(mac);
+
+                cb(null, { status: 1, "result": uploadToken });
+
+            }, function (err) {
+                cb(null, { status: 0, "result": "" });
+            });
+        }
+        catch (err) {
+            cb(null, { status: 0, "result": "" });
+        }
+
+    }
+
+    Fusers.remoteMethod(
+        'GetQinniuToken',
         {
             http: { verb: 'post' },
             description: '发送认证码',
@@ -254,14 +304,14 @@ module.exports = function (Fusers) {
         EWTRACE("paymentOrders Begin");
 
 
-            bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '"+orderInfo.payType+"', status = 'payment' where id = " + orderInfo.orderId;
+        bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment' where id = " + orderInfo.orderId;
 
-            DoSQL(bsSQL).then(function () {
-                cb(null, { status: 1, "result": "" });
-            }, function (err) {
-                cb(err, { status: 0, "result": "" });
-            });
-            EWTRACE("saveOrders End");
+        DoSQL(bsSQL).then(function () {
+            cb(null, { status: 1, "result": "" });
+        }, function (err) {
+            cb(err, { status: 0, "result": "" });
+        });
+        EWTRACE("saveOrders End");
 
     };
 
@@ -300,7 +350,7 @@ module.exports = function (Fusers) {
 
             var title = UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")";
 
-            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status,fee) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64') +"',now(),'" + title + "','" + orderInfo.height + "','" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.height + "','" + orderInfo.address + "','" + orderInfo.zipCode + "','" + orderInfo.finishImage + "','new',"+BaseTypeInfo.Result[0].fee+");";
+            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status,fee) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64') + "',now(),'" + title + "','" + orderInfo.height + "','" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.height + "','" + orderInfo.address + "','" + orderInfo.zipCode + "','" + orderInfo.finishImage + "','new'," + BaseTypeInfo.Result[0].fee + ");";
 
             bsSQL += "select id as orderId,fee,orderType from cd_TstyleOrders where id = LAST_INSERT_ID() order by id desc limit 1;";
 
@@ -324,7 +374,7 @@ module.exports = function (Fusers) {
             accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"userId":"","gender":"","baseId":"","styleContext":"","height":170,"color":"#FFFFFF","orderType":"Check/Share","size":"","address":"","zipCode":"","finishImage":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
-    );    
+    );
 
     Fusers.OrderPraise = function (orderInfo, cb) {
         EWTRACE("OrderPraise Begin");
