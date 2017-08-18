@@ -404,7 +404,7 @@ module.exports = function (Fusers) {
     Fusers.requestOrders = function (orderInfo, cb) {
         EWTRACE("requestOrders Begin");
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage from cd_tstyleorders where userid = '" + orderInfo.userId + "' order by adddate desc;";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage from cd_tstyleorders where userid = '" + orderInfo.userId + "' order by adddate desc limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
 
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
@@ -433,7 +433,7 @@ module.exports = function (Fusers) {
     Fusers.requestOrdersFromOrderId = function (orderInfo, cb) {
         EWTRACE("requestOrdersFromOrderId Begin");
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage from cd_tstyleorders where id = '" + orderInfo.userid + "'";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage from cd_tstyleorders where id = '" + orderInfo.userid + "' limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
 
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
@@ -487,9 +487,7 @@ module.exports = function (Fusers) {
     Fusers.requestSquareDesign = function (orderInfo, cb) {
         EWTRACE("requestOrdersFromDesign Begin");
 
-        var begin = (orderInfo.pageIndex - 1) * 10 + 1;
-
-        var bsSQL = "select a.id,a.mobile,a.name,a.headimage from cd_users a, (select userid from cd_tstyleorders order by praise desc limit 10) t where a.id = t.userid limit " + begin + ",10";
+        var bsSQL = "select a.id,a.mobile,a.name,a.headimage from cd_users a, (select userid from cd_tstyleorders order by praise desc limit 10) t where a.id = t.userid limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
 
         DoSQL(bsSQL).then(function (result) {
             cb(null, { status: 1, "result": result });
