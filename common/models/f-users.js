@@ -353,7 +353,7 @@ module.exports = function (Fusers) {
     Fusers.requestOrders = function (orderInfo, cb) {
         EWTRACE("requestOrders Begin");
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders where userid = '" + orderInfo.userId + "' order by adddate desc;";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage from cd_tstyleorders where userid = '" + orderInfo.userId + "' order by adddate desc;";
 
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
@@ -382,7 +382,7 @@ module.exports = function (Fusers) {
     Fusers.requestOrdersFromOrderId = function (orderInfo, cb) {
         EWTRACE("requestOrdersFromOrderId Begin");
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders where id = '" + orderInfo.userid + "'";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage from cd_tstyleorders where id = '" + orderInfo.userid + "'";
 
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
@@ -410,7 +410,7 @@ module.exports = function (Fusers) {
     Fusers.requestOrdersFromsquare = function (cb) {
         EWTRACE("requestOrdersFromsquare Begin");
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders order by praise desc limit 10;";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage from cd_tstyleorders order by praise desc limit 10;";
 
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
@@ -464,11 +464,11 @@ module.exports = function (Fusers) {
 
         var pv = [];
         var praiseList = { Result: 0 };
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders where id = '" + orderInfo.userId + "' order by praise desc limit 5;";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage from cd_tstyleorders where id = '" + orderInfo.userId + "' order by praise desc limit 5;";
         pv.push(ExecuteSyncSQLResult(bsSQL, praiseList));
 
         var newList = { Result: 0 };
-        bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size from cd_tstyleorders where id = '" + orderInfo.userId + "' order by adddate desc limit 5;";
+        bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,finishimage from cd_tstyleorders where id = '" + orderInfo.userId + "' order by adddate desc limit 5;";
         pv.push(ExecuteSyncSQLResult(bsSQL, newList));
 
         Promise.all(pv).then(function () {
