@@ -302,7 +302,7 @@ module.exports = function (Fusers) {
 
             bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status,fee) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64') +"',now(),'" + title + "','" + orderInfo.height + "','" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.height + "','" + orderInfo.address + "','" + orderInfo.zipCode + "','" + orderInfo.finishImage + "','new',"+BaseTypeInfo.Result[0].fee+");";
 
-            bsSQL += "select id as orderId,fee from cd_TstyleOrders where id = LAST_INSERT_ID() order by id desc limit 1;";
+            bsSQL += "select id as orderId,fee,orderType from cd_TstyleOrders where id = LAST_INSERT_ID() order by id desc limit 1;";
 
             DoSQL(bsSQL).then(function (result) {
                 cb(null, { status: 1, "result": result[0] });
