@@ -353,7 +353,7 @@ module.exports = function (Fusers) {
     Fusers.requestOrders = function (orderInfo, cb) {
         EWTRACE("requestOrders Begin");
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders where userid = '" + orderInfo.userid + "' order by adddate desc;";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders where userid = '" + orderInfo.userId + "' order by adddate desc;";
 
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
