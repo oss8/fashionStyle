@@ -254,7 +254,7 @@ module.exports = function (Fusers) {
         EWTRACE("paymentOrders Begin");
 
 
-            bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "', status = 'payment' where id = " + orderInfo.orderId;
+            bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '"+orderInfo.payType+"', status = 'payment' where id = " + orderInfo.orderId;
 
             DoSQL(bsSQL).then(function () {
                 cb(null, { status: 1, "result": "" });
@@ -270,7 +270,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '支付单据',
-            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"orderId":"","address":"","zipCode":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"orderId":"","address":"","zipCode":"","payType":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
