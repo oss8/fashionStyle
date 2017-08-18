@@ -5,6 +5,7 @@ module.exports = function (Fusers) {
     var app = require('../../server/server');
     app.DisableSystemMethod(Fusers);
     var _ = require('underscore');
+    var qiniu = require('qiniu');
 
     Fusers.sendRegCode = function (userInfo, cb) {
         EWTRACE("sendRegCode Begin");
@@ -99,7 +100,7 @@ module.exports = function (Fusers) {
     );
 
     Fusers.GetQinniuToken = function (token, cb) {
-        EWTRACE("GetUserInfo Begin");
+        EWTRACE("GetQinniuToken Begin");
 
         try {
             var _info = GetOpenIDFromToken(token);
