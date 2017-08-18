@@ -304,7 +304,7 @@ module.exports = function (Fusers) {
             bsSQL += "select id as orderId,fee from cd_TstyleOrders where id = LAST_INSERT_ID() order by id desc limit 1;";
 
             DoSQL(bsSQL).then(function (result) {
-                cb(null, { status: 1, "result": result });
+                cb(null, { status: 1, "result": result[0] });
             }, function (err) {
                 cb(err, { status: 0, "result": "" });
             });
