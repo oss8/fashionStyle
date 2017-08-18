@@ -250,6 +250,31 @@ module.exports = function (Fusers) {
         }
     );
 
+    Fusers.paymentOrders = function (orderInfo, cb) {
+        EWTRACE("paymentOrders Begin");
+
+
+            bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = " + orderInfo.zipCode + ", status = 'payment' where id = " + orderInfo.orderId;
+
+            DoSQL(bsSQL).then(function () {
+                cb(null, { status: 1, "result": "" });
+            }, function (err) {
+                cb(err, { status: 0, "result": "" });
+            });
+            EWTRACE("saveOrders End");
+
+    };
+
+    Fusers.remoteMethod(
+        'paymentOrders',
+        {
+            http: { verb: 'post' },
+            description: '支付单据',
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"orderId":"","address":"","zipCode":""}' },
+            returns: { arg: 'userInfo', type: 'object', root: true }
+        }
+    );
+
     Fusers.saveOrders = function (orderInfo, cb) {
         EWTRACE("saveOrders Begin");
 
@@ -274,7 +299,7 @@ module.exports = function (Fusers) {
             }
 
 
-            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64'); +"',now(),'" + UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")'," + orderInfo.height + ",'" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.size + "','" + orderInfo.address + "'," + orderInfo.zipCode + ",'" + orderInfo.finishImage + "')";
+            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64'); +"',now(),'" + UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")'," + orderInfo.height + ",'" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.size + "','" + orderInfo.address + "'," + orderInfo.zipCode + ",'" + orderInfo.finishImage + "','new')";
 
             DoSQL(bsSQL).then(function () {
                 cb(null, { status: 1, "result": "" });
@@ -296,7 +321,7 @@ module.exports = function (Fusers) {
             accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"userId":"","gender":"","baseId":"","styleContext":"","height":170,"color":"#FFFFFF","orderType":"Check/Share","size":"","address":"","zipCode":"","finishImage":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
-    );
+    );    
 
     Fusers.OrderPraise = function (orderInfo, cb) {
         EWTRACE("OrderPraise Begin");
