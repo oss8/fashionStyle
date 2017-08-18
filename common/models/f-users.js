@@ -280,7 +280,7 @@ module.exports = function (Fusers) {
 
         var pv = [];
         var BaseTypeInfo = { Result: 0 };
-        var bsSQL = "select baseId, baseName from cd_baseversion where baseId = '" + orderInfo.baseId + "'";
+        var bsSQL = "select baseId, baseName,fee from cd_baseversion where baseId = '" + orderInfo.baseId + "'";
         pv.push(ExecuteSyncSQLResult(bsSQL, BaseTypeInfo));
 
         var UserInfo = { Result: 0 };
@@ -299,10 +299,12 @@ module.exports = function (Fusers) {
             }
 
 
-            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64'); +"',now(),'" + UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")'," + orderInfo.height + ",'" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.size + "','" + orderInfo.address + "'," + orderInfo.zipCode + ",'" + orderInfo.finishImage + "','new')";
+            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status,fee) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64'); +"',now(),'" + UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")'," + orderInfo.height + ",'" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.size + "','" + orderInfo.address + "'," + orderInfo.zipCode + ",'" + orderInfo.finishImage + "','new',"+BaseTypeInfo.Result[0].fee+");";
 
-            DoSQL(bsSQL).then(function () {
-                cb(null, { status: 1, "result": "" });
+            bsSQL += "select id as orderId,fee from cd_TstyleOrders where userId = " + orderInfo.userId + " order by id desc limit 1;";
+
+            DoSQL(bsSQL).then(function (result) {
+                cb(null, { status: 1, "result": result });
             }, function (err) {
                 cb(err, { status: 0, "result": "" });
             });
