@@ -407,7 +407,7 @@ module.exports = function (Fusers) {
         }
     );
 
-    Fusers.requestOrdersFromsquare = function (orderInfo, cb) {
+    Fusers.requestOrdersFromsquare = function (cb) {
         EWTRACE("requestOrdersFromsquare Begin");
 
         var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode from cd_tstyleorders order by praise desc limit 10;";
@@ -429,7 +429,6 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询排名前10单据',
-            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"id":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
