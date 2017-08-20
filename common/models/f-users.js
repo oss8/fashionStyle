@@ -433,14 +433,18 @@ module.exports = function (Fusers) {
     Fusers.requestOrdersFromOrderId = function (orderInfo, cb) {
         EWTRACE("requestOrdersFromOrderId Begin");
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where id = '" + orderInfo.userid + "' limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where id = '" + orderInfo.id + "'";
 
         DoSQL(bsSQL).then(function (result) {
-            result.forEach(function (item) {
-                item.styleContext = Buffer(item.Context, 'base64').toString();
-
-            })
-            cb(null, { status: 1, "result": result });
+            if (result && result.length > 0) {
+                result.forEach(function (item) {
+                    item.styleContext = Buffer(item.Context, 'base64').toString();
+                })
+                cb(null, { status: 1, "result": result[0] });                
+            } else {
+                cb(null, { status: 0, "result": "未找到此订单"});
+            }
+            
         }, function (err) {
             cb(err, { status: 0, "result": "" });
         });
