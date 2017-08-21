@@ -270,7 +270,7 @@ module.exports = function (Fusers) {
         if (!_.isUndefined(userInfo.name)) {
             bsSQL += " name = '" + userInfo.name + "',";
         }
-        bsSQL += "lastLogintime = now() where id = " + _openid;
+        bsSQL += "lastLogintime = now() where userid = " + _openid;
 
         DoSQL(bsSQL).then(function (result) {
 
@@ -597,7 +597,7 @@ module.exports = function (Fusers) {
 
         var pv = [];
         var UserInfo = { Result: 0 };
-        var bsSQL = "select id,userid,name from cd_users where userid = '" + _openid + "'";
+        var bsSQL = "select userid,name from cd_users where userid = '" + _openid + "'";
         pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
         Promise.all(pv).then(function () {
@@ -610,32 +610,32 @@ module.exports = function (Fusers) {
             bsSQL = "";
 
             var isDefault = 0;
-            if (UserInfo.isDefault) {
+            if (userInfo.isDefault) {
                 isDefault = 1;
             }
 
-            if (!_.isUndefined(UserInfo.id)) {
-                bsSQL = "insert into cd_userAddress(userid,address,isDefault,userName,mobile,city,zipcode ) values('" + _openid + "','" + UserInfo.address + "'," + isDefault + ",'" + UserInfo.userName + "','" + UserInfo.mobile + "','" + UserInfo.city + "','" + UserInfo.zipcode + "')";
+            if (_.isUndefined(userInfo.id)) {
+                bsSQL = "insert into cd_userAddress(userid,address,isDefault,userName,mobile,city,zipcode ) values('" + _openid + "','" + userInfo.address + "'," + isDefault + ",'" + userInfo.userName + "','" + userInfo.mobile + "','" + userInfo.city + "','" + userInfo.zipcode + "')";
             }
             else {
                 bsSQL = "update cd_userAddress set ";
                 var fields = "";
-                if (!_.isUndefined(UserInfo.address)) {
-                    fields += " address = '" + UserInfo.address + "',";
+                if (!_.isUndefined(userInfo.address)) {
+                    fields += " address = '" + userInfo.address + "',";
                 }
-                if (!_.isUndefined(UserInfo.userName)) {
-                    fields += " userName = '" + UserInfo.userName + "',";
+                if (!_.isUndefined(userInfo.userName)) {
+                    fields += " userName = '" + userInfo.userName + "',";
                 }
-                if (!_.isUndefined(UserInfo.mobile)) {
-                    fields += " mobile = '" + UserInfo.mobile + "',";
+                if (!_.isUndefined(userInfo.mobile)) {
+                    fields += " mobile = '" + userInfo.mobile + "',";
                 }
-                if (!_.isUndefined(UserInfo.city)) {
-                    fields += " city = '" + UserInfo.city + "',";
+                if (!_.isUndefined(userInfo.city)) {
+                    fields += " city = '" + userInfo.city + "',";
                 }
-                if (!_.isUndefined(UserInfo.zipcode)) {
-                    fields += " zipcode = '" + UserInfo.zipcode + "',";
+                if (!_.isUndefined(userInfo.zipcode)) {
+                    fields += " zipcode = '" + userInfo.zipcode + "',";
                 }
-
+                fields = fields.substr(0,fields.length-1);
                 bsSQL += fields + " where id= " + userInfo.id;
             }
 
@@ -644,10 +644,10 @@ module.exports = function (Fusers) {
             }, function (err) {
                 cb(err, { status: 0, "result": "" });
             });
-            EWTRACE("saveOrders End");
+            EWTRACE("addUseraddress End");
         }, function (err) {
             cb(err, { status: 0, "result": "" });
-            EWTRACE("saveOrders End");
+            EWTRACE("addUseraddress End");
         });
     };
 
