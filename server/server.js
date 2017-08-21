@@ -4,6 +4,9 @@ var loopback = require('loopback');
 var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
+var xmlparser = require('express-xml-bodyparser');
+app.use(xmlparser());
+
 
 app.DisableSystemMethod = function (_basemodel) {
     _basemodel.disableRemoteMethodByName("create", true);

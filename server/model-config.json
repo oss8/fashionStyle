@@ -48,5 +48,9 @@
   "AliPay": {
     "dataSource": "db",
     "public": true
+  },
+  "wxpay": {
+    "dataSource": "db",
+    "public": true
   }
 }
