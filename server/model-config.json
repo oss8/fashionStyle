@@ -44,5 +44,9 @@
   "f-Users": {
     "dataSource": "db",
     "public": true
+  },
+  "AliPay": {
+    "dataSource": "db",
+    "public": true
   }
 }

@@ -8,6 +8,7 @@
     "posttest": "npm run lint && nsp check"
   },
   "dependencies": {
+    "alipay2": "^1.0.3",
     "color": "^1.0.3",
     "compression": "^1.0.3",
     "cors": "^2.5.2",
@@ -20,6 +21,7 @@
     "loopback-component-explorer": "^4.0.0",
     "loopback-connector-mysql": "^4.2.0",
     "loopback-connector-rest": "^2.1.0",
+    "node-uuid": "^1.4.8",
     "qiniu": "^7.0.6",
     "serve-favicon": "^2.0.1",
     "strong-error-handler": "^1.0.1"
