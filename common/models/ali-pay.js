@@ -50,6 +50,7 @@ CmZYI/FCEa3/cNMW0QIDAQAB
             cb( null, { status: 1, "result": res });
         }).catch(function( err ) {
             console.log(err);
+            cb( err, { status: 0, "result": err.message });
         });
     }
 
