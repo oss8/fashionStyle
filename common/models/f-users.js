@@ -62,7 +62,7 @@ module.exports = function (Fusers) {
 
         try {
             var _info = GetOpenIDFromToken(token);
-            var bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
+            var bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
             DoSQL(bsSQL).then(function (UserInfo) {
 
                 getWeChatToken(UserInfo[0]).then(function (resultToken) {
@@ -104,7 +104,7 @@ module.exports = function (Fusers) {
 
         try {
             var _info = GetOpenIDFromToken(token);
-            var bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
+            var bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
             DoSQL(bsSQL).then(function (UserInfo) {
                 if (UserInfo.length == 0) {
                     cb(null, { status: 0, "result": "" });
@@ -158,19 +158,19 @@ module.exports = function (Fusers) {
         var bsSQL = "";
 
         if (!_.isUndefined(userInfo.mobile)) {
-            bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + userInfo.mobile + "' and password = '" + userInfo.password + "'";
+            bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + userInfo.mobile + "' and password = '" + userInfo.password + "'";
             pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
             var UserAddress = {};
-            bsSQL = "select id,address,isdefault from cd_useraddress where id in (select id from cd_users where mobile = '" + userInfo.mobile + "' and password = '" + userInfo.password + "')";
+            bsSQL = "select id,userid,address,isdefault,userName,mobile,city,zipcode from cd_useraddress where userid in (select userid from cd_users where mobile = '" + userInfo.mobile + "' and password = '" + userInfo.password + "')";
             pv.push(ExecuteSyncSQLResult(bsSQL, UserAddress));
         }
         else {
-            bsSQL = "select id,mobile,name,lastLogintime,password,headImage from cd_users where openid = '" + userInfo.openId + "'";
+            bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where openid = '" + userInfo.openId + "'";
             pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
             var UserAddress = {};
-            bsSQL = "select id,address,isdefault from cd_useraddress where id in (select id from cd_users where openid = '" + userInfo.openId + "')";
+            bsSQL = "select id,userid,address,isdefault,userName,mobile,city,zipcode from cd_useraddress where userid in (select userid from cd_users where openid = '" + userInfo.openId + "')";
             pv.push(ExecuteSyncSQLResult(bsSQL, UserAddress));
         }
 
@@ -210,7 +210,7 @@ module.exports = function (Fusers) {
                     bsSQL += "insert into cd_users(openid,lastLogintime) values('" + userInfo.openId + "',now());";
                     isNew = true;
                 }
-                bsSQL += "select id,mobile,name,lastLogintime,password,headImage from cd_users where openid = '" + userInfo.openId + "';";
+                bsSQL += "select userid,mobile,name,lastLogintime,password,headImage from cd_users where openid = '" + userInfo.openId + "';";
                 bsSQL += "update cd_users set lastLogintime = now() where openid = '" + userInfo.openId + "';";
                 DoSQL(bsSQL).then(function (result) {
 
@@ -253,7 +253,7 @@ module.exports = function (Fusers) {
         var OpenID = {};
         try {
             OpenID = GetOpenIDFromToken(token);
-            _openid = OpenID.id;
+            _openid = OpenID.userid;
         } catch (err) {
             cb(null, { status: 403, "result": "" });
             return;
@@ -304,8 +304,7 @@ module.exports = function (Fusers) {
     Fusers.paymentOrders = function (orderInfo, cb) {
         EWTRACE("paymentOrders Begin");
 
-
-        bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment' where id = " + orderInfo.orderId;
+        var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment' where id = " + orderInfo.orderId;
 
         DoSQL(bsSQL).then(function () {
             cb(null, { status: 1, "result": "" });
@@ -326,8 +325,18 @@ module.exports = function (Fusers) {
         }
     );
 
-    Fusers.saveOrders = function (orderInfo, cb) {
+    Fusers.saveOrders = function (orderInfo, token, cb) {
         EWTRACE("saveOrders Begin");
+
+        var _openid = null;
+        var OpenID = {};
+        try {
+            OpenID = GetOpenIDFromToken(token);
+            _openid = OpenID.userid;
+        } catch (err) {
+            cb(null, { status: 403, "result": "" });
+            return;
+        }
 
         var pv = [];
         var BaseTypeInfo = { Result: 0 };
@@ -335,7 +344,7 @@ module.exports = function (Fusers) {
         pv.push(ExecuteSyncSQLResult(bsSQL, BaseTypeInfo));
 
         var UserInfo = { Result: 0 };
-        bsSQL = "select id,name from cd_users where id = '" + orderInfo.userId + "'";
+        bsSQL = "select userid,name from cd_users where userid = '" + orderInfo.userId + "'";
         pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
         Promise.all(pv).then(function () {
@@ -351,7 +360,7 @@ module.exports = function (Fusers) {
 
             var title = UserInfo.Result[0].name + '设计的' + BaseTypeInfo.Result[0].baseName + '(' + new Date().format("yyyy-MM-dd") + ")";
 
-            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status,fee) values('" + orderInfo.userId + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64') + "',now(),'" + title + "','" + orderInfo.height + "','" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.height + "','" + orderInfo.address + "','" + orderInfo.zipCode + "','" + orderInfo.finishImage + "','new'," + BaseTypeInfo.Result[0].fee + ");";
+            bsSQL = "insert into cd_TstyleOrders(userId,gender,baseId,baseName,stylecontext,adddate,title,height,color,orderType,praise,size,address,zipcode,finishImage,status,fee) values('" + _openid + "','" + orderInfo.gender + "','" + orderInfo.baseId + "','" + BaseTypeInfo.Result[0].baseName + "','" + new Buffer(orderInfo.styleContext).toString('base64') + "',now(),'" + title + "','" + orderInfo.height + "','" + orderInfo.color + "','" + orderInfo.orderType + "',0,'" + orderInfo.height + "','" + orderInfo.address + "','" + orderInfo.zipCode + "','" + orderInfo.finishImage + "','new'," + BaseTypeInfo.Result[0].fee + ");";
 
             bsSQL += "select id as orderId,fee,orderType from cd_TstyleOrders where id = LAST_INSERT_ID() order by id desc limit 1;";
 
@@ -372,7 +381,14 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '保存用户设计',
-            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"userId":"","gender":"","baseId":"","styleContext":"","height":170,"color":"#FFFFFF","orderType":"Check/Share","size":"","address":"","zipCode":"","finishImage":""}' },
+            accepts: [{ arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"gender":"","baseId":"","styleContext":"","height":170,"color":"#FFFFFF","orderType":"Check/Share","size":"","address":"","zipCode":"","finishImage":""}' }, {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            }],
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -401,10 +417,20 @@ module.exports = function (Fusers) {
         }
     );
 
-    Fusers.requestOrders = function (orderInfo, cb) {
+    Fusers.requestOrders = function (token, cb) {
         EWTRACE("requestOrders Begin");
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.userId + "' order by adddate desc limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
+        var _openid = null;
+        var OpenID = {};
+        try {
+            OpenID = GetOpenIDFromToken(token);
+            _openid = OpenID.userid;
+        } catch (err) {
+            cb(null, { status: 403, "result": "" });
+            return;
+        }
+
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where userid = '" + _openid + "' order by adddate desc limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
 
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
@@ -425,7 +451,14 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询用户订单',
-            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"userId":""}' },
+            accepts: {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -491,7 +524,7 @@ module.exports = function (Fusers) {
     Fusers.requestSquareDesign = function (orderInfo, cb) {
         EWTRACE("requestOrdersFromDesign Begin");
 
-        var bsSQL = "select a.id,a.mobile,a.name,a.headimage from cd_users a, (select userid from cd_tstyleorders order by praise desc limit 10) t where a.id = t.userid limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
+        var bsSQL = "select a.userid,a.mobile,a.name,a.headimage from cd_users a, (select userid from cd_tstyleorders order by praise desc limit 10) t where a.id = t.userid limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
 
         DoSQL(bsSQL).then(function (result) {
             cb(null, { status: 1, "result": result });
@@ -517,11 +550,11 @@ module.exports = function (Fusers) {
 
         var pv = [];
         var praiseList = { Result: 0 };
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where id = '" + orderInfo.userId + "' order by praise desc limit 5;";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.desginUserId + "' order by praise desc limit 5;";
         pv.push(ExecuteSyncSQLResult(bsSQL, praiseList));
 
         var newList = { Result: 0 };
-        bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,finishimage,fee from cd_tstyleorders where id = '" + orderInfo.userId + "' order by adddate desc limit 5;";
+        bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.desginUserId + "' order by adddate desc limit 5;";
         pv.push(ExecuteSyncSQLResult(bsSQL, newList));
 
         Promise.all(pv).then(function () {
@@ -531,7 +564,7 @@ module.exports = function (Fusers) {
             _result.forEach(function (item) {
                 item.styleContext = Buffer(item.Context, 'base64').toString();
 
-            })
+            }) 
             cb(null, { status: 1, "result": _result });
         }, function (err) {
             cb(err, { status: 0, "result": "" });
@@ -544,17 +577,27 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询设计师订单',
-            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"userId":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"desginUserId":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
 
-    Fusers.addUseraddress = function (userInfo, cb) {
+    Fusers.addUseraddress = function (userInfo, token, cb) {
         EWTRACE("addUseraddress Begin");
+
+        var _openid = null;
+        var OpenID = {};
+        try {
+            OpenID = GetOpenIDFromToken(token);
+            _openid = OpenID.userid;
+        } catch (err) {
+            cb(null, { status: 403, "result": "" });
+            return;
+        }
 
         var pv = [];
         var UserInfo = { Result: 0 };
-        var bsSQL = "select id,name from cd_users where id = '" + orderInfo.userId + "'";
+        var bsSQL = "select id,userid,name from cd_users where userid = '" + _openid + "'";
         pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
         Promise.all(pv).then(function () {
@@ -569,10 +612,32 @@ module.exports = function (Fusers) {
             var isDefault = 0;
             if (UserInfo.isDefault) {
                 isDefault = 1;
-                bsSQL = "update cd_userAddress set isDefault = 0 where id = '" + UserInfo.userId + "';";
             }
 
-            bsSQL += "insert into cd_userAddress(id,address,isDefault) values('" + UserInfo.userId + "','" + UserInfo.address + "'," + isDefault + ")";
+            if (!_.isUndefined(UserInfo.id)) {
+                bsSQL = "insert into cd_userAddress(userid,address,isDefault,userName,mobile,city,zipcode ) values('" + _openid + "','" + UserInfo.address + "'," + isDefault + ",'" + UserInfo.userName + "','" + UserInfo.mobile + "','" + UserInfo.city + "','" + UserInfo.zipcode + "')";
+            }
+            else {
+                bsSQL = "update cd_userAddress set ";
+                var fields = "";
+                if (!_.isUndefined(UserInfo.address)) {
+                    fields += " address = '" + UserInfo.address + "',";
+                }
+                if (!_.isUndefined(UserInfo.userName)) {
+                    fields += " userName = '" + UserInfo.userName + "',";
+                }
+                if (!_.isUndefined(UserInfo.mobile)) {
+                    fields += " mobile = '" + UserInfo.mobile + "',";
+                }
+                if (!_.isUndefined(UserInfo.city)) {
+                    fields += " city = '" + UserInfo.city + "',";
+                }
+                if (!_.isUndefined(UserInfo.zipcode)) {
+                    fields += " zipcode = '" + UserInfo.zipcode + "',";
+                }
+
+                bsSQL += fields + " where id= " + userInfo.id;
+            }
 
             DoSQL(bsSQL).then(function () {
                 cb(null, { status: 1, "result": "" });
@@ -591,7 +656,55 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '保存用户收货地址',
-            accepts: { arg: 'userInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"userId":"","address":"","isDefault":"true"}' },
+            accepts: [{ arg: 'userInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"id":"","address":"","isDefault":"true","userName","","mobile":"","city":"","zipcode":""}' }, {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            }],
+            returns: { arg: 'userInfo', type: 'object', root: true }
+        }
+    );
+
+    Fusers.setDefaultAddress = function (userInfo, token, cb) {
+        EWTRACE("setDefaultAddress Begin");
+
+        var _openid = null;
+        var OpenID = {};
+        try {
+            OpenID = GetOpenIDFromToken(token);
+            _openid = OpenID.userid;
+        } catch (err) {
+            cb(null, { status: 403, "result": "" });
+            return;
+        }
+
+        var bsSQL = "update cd_userAddress set isDefault=0 where userid = " + _openid + ";update cd_userAddress set isDefault=1 where id = " + userInfo.id;
+
+        DoSQL(bsSQL).then(function () {
+            cb(null, { status: 1, "result": "" });
+        }, function (err) {
+            cb(err, { status: 0, "result": "" });
+        });
+        EWTRACE("addUseraddress End");
+
+    };
+
+    Fusers.remoteMethod(
+        'setDefaultAddress',
+        {
+            http: { verb: 'post' },
+            description: '设置用户缺省收货地址',
+            accepts: [{ arg: 'userInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"id":""}' }, {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            }],
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
