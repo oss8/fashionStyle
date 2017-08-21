@@ -61,7 +61,16 @@ module.exports = function (Fusers) {
         EWTRACE("GetUserInfo Begin");
 
         try {
-            var _info = GetOpenIDFromToken(token);
+
+
+            var _info = {};
+            try {
+                _info = GetOpenIDFromToken(token);
+            } catch (err) {
+                cb(err, { status: 0, "result": "" });
+                return;
+            }
+
             var bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
             DoSQL(bsSQL).then(function (UserInfo) {
 
@@ -73,7 +82,7 @@ module.exports = function (Fusers) {
                     cb(null, { status: 1, "result": _result });
                 });
             }, function (err) {
-                cb(null, { status: 0, "result": "" });
+                cb(err, { status: 0, "result": "" });
             });
         }
         catch (err) {
@@ -304,13 +313,39 @@ module.exports = function (Fusers) {
     Fusers.paymentOrders = function (orderInfo, cb) {
         EWTRACE("paymentOrders Begin");
 
-        var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment' where id = " + orderInfo.orderId;
+        var payInfo = {};
+        payInfo.fee = orderInfo.fee;
 
-        DoSQL(bsSQL).then(function () {
-            cb(null, { status: 1, "result": "" });
-        }, function (err) {
-            cb(err, { status: 0, "result": "" });
-        });
+
+        if (orderInfo.payType == 'aliPay') {
+
+            app.models.AliPay.Ali_Pay(payInfo).then(function (payResult) {
+
+                var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment',payId = '" + payInfo.out_trade_no + "' where id = " + orderInfo.orderId;
+
+                DoSQL(bsSQL).then(function () {
+                    cb(null, { status: 1, "result": payResult });
+                }, function (err) {
+                    cb(err, { status: 1, "result": "" });
+                })
+            });
+        }
+        else {
+
+            app.models.Wxpay.WX_Pay(payInfo).then(function (payResult) {
+                var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment',payId = '" + payInfo.out_trade_no + "' where id = " + orderInfo.orderId;
+
+                DoSQL(bsSQL).then(function () {
+                    payResult.out_trade_no = payInfo.out_trade_no;
+                    cb(null, { status: 1, "result": payResult });
+                }, function (err) {
+                    cb(err, { status: 1, "result": "" });
+                })
+            }, function (err) {
+                cb(err, { status: 1, "result": "" });
+            })
+        }
+
         EWTRACE("saveOrders End");
 
     };
@@ -320,7 +355,34 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '支付单据',
-            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"orderId":"","address":"","zipCode":"","payType":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"orderId":"","address":"","zipCode":"","payType":"","fee":""}' },
+            returns: { arg: 'userInfo', type: 'object', root: true }
+        }
+    );
+
+    Fusers.getPayStatus = function (orderInfo, cb) {
+        EWTRACE("getPayStatus Begin");
+
+
+        var bsSQL = "select status from cd_TstyleOrders where payid = '" + orderInfo.paymentId + "'";
+
+        DoSQL(bsSQL).then(function (result) {
+            cb(null, { status: 1, "result": result });
+        }, function (err) {
+            cb(err, { status: 1, "result": "" });
+        })
+
+
+        EWTRACE("saveOrders End");
+
+    };
+
+    Fusers.remoteMethod(
+        'getPayStatus',
+        {
+            http: { verb: 'post' },
+            description: '获得单据支付状态',
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"paymentId":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -344,7 +406,7 @@ module.exports = function (Fusers) {
         pv.push(ExecuteSyncSQLResult(bsSQL, BaseTypeInfo));
 
         var UserInfo = { Result: 0 };
-        bsSQL = "select userid,name from cd_users where userid = '" + orderInfo.userId + "'";
+        bsSQL = "select userid,name from cd_users where userid = '" + _openid + "'";
         pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
         Promise.all(pv).then(function () {
@@ -365,6 +427,7 @@ module.exports = function (Fusers) {
             bsSQL += "select id as orderId,fee,orderType from cd_TstyleOrders where id = LAST_INSERT_ID() order by id desc limit 1;";
 
             DoSQL(bsSQL).then(function (result) {
+
                 cb(null, { status: 1, "result": result[0] });
             }, function (err) {
                 cb(err, { status: 0, "result": "" });
@@ -392,6 +455,10 @@ module.exports = function (Fusers) {
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
+
+
+
+
 
     Fusers.OrderPraise = function (orderInfo, cb) {
         EWTRACE("OrderPraise Begin");
@@ -473,11 +540,11 @@ module.exports = function (Fusers) {
                 result.forEach(function (item) {
                     item.styleContext = Buffer(item.Context, 'base64').toString();
                 })
-                cb(null, { status: 1, "result": result[0] });                
+                cb(null, { status: 1, "result": result[0] });
             } else {
-                cb(null, { status: 0, "result": "未找到此订单"});
+                cb(null, { status: 0, "result": "未找到此订单" });
             }
-            
+
         }, function (err) {
             cb(err, { status: 0, "result": "" });
         });
@@ -564,7 +631,7 @@ module.exports = function (Fusers) {
             _result.forEach(function (item) {
                 item.styleContext = Buffer(item.Context, 'base64').toString();
 
-            }) 
+            })
             cb(null, { status: 1, "result": _result });
         }, function (err) {
             cb(err, { status: 0, "result": "" });
@@ -635,7 +702,7 @@ module.exports = function (Fusers) {
                 if (!_.isUndefined(userInfo.zipcode)) {
                     fields += " zipcode = '" + userInfo.zipcode + "',";
                 }
-                fields = fields.substr(0,fields.length-1);
+                fields = fields.substr(0, fields.length - 1);
                 bsSQL += fields + " where id= " + userInfo.id;
             }
 
