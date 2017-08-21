@@ -27,7 +27,7 @@ module.exports = function (Wxpay) {
             out_trade_no: _out_trade_no,
             total_fee: 1,
             spbill_create_ip: '192.168.2.210',
-            notify_url: 'http://gl.box.eshine.cn/api/Wxpays/wxnotify',
+            notify_url: 'http://http://style.man-kang.com/api/Wxpays/wxnotify',
             trade_type: 'NATIVE',
             product_id: '1234567890'
         }, function (err, result) {
