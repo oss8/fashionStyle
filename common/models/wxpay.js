@@ -4,11 +4,11 @@ module.exports = function (Wxpay) {
     var app = require('../../server/server');
     app.DisableSystemMethod(Wxpay);
 
-    require('dotenv').config({ path: './config/.env' });
 
     var _ = require('underscore');
     var uuid = require('node-uuid');
 
+    require('dotenv').config({ path: './config/.env' });
     var appid = process.env.wxAppID;
     var mch_id = process.env.wxMchID;
     var key = process.env.wxPartnerkey;
@@ -102,7 +102,7 @@ module.exports = function (Wxpay) {
                         prepay_id: prepay_id,
                         paySign: _paySignjs,
                         out_trade_no: _out_trade_no,
-                        code_url : result.code_url  //微信支付生成二维码，在此处返回
+                        code_url: result.code_url  //微信支付生成二维码，在此处返回
                     };
                     EWTRACEIFY(args);
                     resolve(args);
@@ -128,9 +128,7 @@ module.exports = function (Wxpay) {
         console.log("wxnotify");
         var param = a.xml;
         param.nstr = a.xml.out_trade_no[0];
-
         var trade_type = a.xml.trade_type[0];
-
         var return_code = param.return_code[0];
         var result_code = param.result_code[0];
 
@@ -152,10 +150,8 @@ module.exports = function (Wxpay) {
     }
 
     // server.js 文件头必须包含这两句话，否则xml无法解析
-    var xmlparser = require('express-xml-bodyparser');
-    app.use(xmlparser());
-
-
+    //var xmlparser = require('express-xml-bodyparser');
+    //app.use(xmlparser());
     Wxpay.remoteMethod(
         'wxnotify',
         {

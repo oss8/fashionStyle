@@ -5,6 +5,10 @@ module.exports = function (AliPay) {
 
     var uuid = require('node-uuid');
 
+    require('dotenv').config({ path: './config/.env' });
+    var appid = process.env.aliAppID;
+
+    
     AliPay.Ali_Pay = function (payInfo) {
         console.log("Ali_Pay Begin");
         return new Promise(function (resolve, reject) {
@@ -13,41 +17,28 @@ module.exports = function (AliPay) {
             const Alipay = require('alipay2');
 
             const alipay = new Alipay({
-                notify_url: "http://style.man-kang.com/api/AliPays/alnotify",
-                appId: '2015092200313107',
+                notify_url: process.env.wxNotifyURL + "AliPays/alnotify",
+                appId: appid,
                 signType: 'RSA',
-                appKey: `-----BEGIN RSA PRIVATE KEY-----
-MIICXQIBAAKBgQDP6walVtvIO55815HougB2VuSHxKpEEinXm5Ybmfh2uDTiwQX1
-K4cYNpZVydNxJW8YvrkkgFrvsteJCVJqPAQlZQGINpdoZhJpzuUFydvaSrnpmAk/
-pIXRcUvlW6WraCG56rgGo4Ym1dBMKg8AaVdU5A5RWwT/bT9DhMIhv+iKaQIDAQAB
-AoGBAKmBTRC8aD+swz+6Kz0Vbs0LeBJrtff66tvY/x6Pfy2ibZMzlBzVmLSXxCY6
-fUPwJcuBqcTlU725Ctiwndz4AtPVXF6aePQAOQo47ayEDTxwKe7ZocEL6xh8nEMO
-oGbPZOOFYrpY9+STL+KHFbyARUwRAm+G99AI6xRk/dgQmWllAkEA7Rk8dabIK5w9
-dnjuoW7mYJxzn8+JupRT/XzgCPNcbm8SvYCBn2JTrCocpaKw97FSwH9ggbZAsujZ
-IXPq3sfxxwJBAOB+RF7xhj+fK9BO+JDsK/2/nIrjMF6OTR0BBUyzRPx850jJEcPh
-makgiRe+QAjlGtFl0YLZj8X9XaWwdj0jok8CQF1fD9lBWhkaiXXrgAZhFya61in8
-YD/zA/SSxeOgeykeYuHwBpwO6+akGu372PdihLU8NHRAotASNNggv0EGuqcCQGav
-OuTWwxps2ySgSrA3ZvPdZmRdAO3vVzRyGBN6WI7JLx2q4xZfJeMnf629lxq6eObZ
-FNkuXMYqW2CDc8IJf58CQQCeUO+jgjCpjD1RSVvW10MWPR4aCvBwON3SeYaHG4xh
-0Xz+jHN9gCwzwUlSBuZpckHYKg0KGicKCuovhxqedW0f
------END RSA PRIVATE KEY-----`,
-                alipayPublicKey: `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDI6d306Q8fIfCOaTXyiUeJHkr
-IvYISRcc73s3vF1ZT7XN8RNPwJxo8pWaJMmvyTn9N4HQ632qJBVHf8sxHi/fEsra
-prwCtzvzQETrNRwVxLO5jVmRGi60j8Ue1efIlzPXV9je9mkjzOmdssymZkh2QhUr
-CmZYI/FCEa3/cNMW0QIDAQAB
------END PUBLIC KEY-----`,
+                appKey: fs.readFileSync(path.join(__dirname, '../../config/privateKey.pub')),
+                alipayPublicKey: fs.readFileSync(path.join(__dirname, '../../config/publicKey.pub')),
+                charset : 'utf-8',
+                sign_type  : 'RSA'
             });
             payInfo.out_trade_no = uuid.v4();
+
+            var _fee = payInfo.fee;
+            _fee = 0.01;
+
             alipay.precreate({
                 subject: '杭州人马座科技有限公司'
                 , out_trade_no: payInfo.out_trade_no
-                , total_amount: payInfo.fee
+                , total_amount: _fee
                 , timeout_express: '10m'
             }).then(function (res) {
                 console.log(res);
                 res.out_trade_no = payInfo.out_trade_no;
-                res.app_id = '2015092200313107';
+                res.app_id = appid;
 
                 resolve(res);
             }).catch(function (err) {
@@ -108,7 +99,7 @@ CmZYI/FCEa3/cNMW0QIDAQAB
                 }
             ],
             returns: [{ arg: 'body', type: 'file', root: true }, { arg: 'Content-Type', type: 'string', http: { target: 'header' } }],
-            http: { path: '/alnotify', verb: 'post' }
+            http: { verb: 'post' }
         }
     );
 };
