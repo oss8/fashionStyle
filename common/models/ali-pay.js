@@ -40,12 +40,15 @@ CmZYI/FCEa3/cNMW0QIDAQAB
             });
             payInfo.out_trade_no = uuid.v4();
             alipay.precreate({
-                subject: 'Example'
+                subject: '杭州人马座科技有限公司'
                 , out_trade_no: payInfo.out_trade_no
                 , total_amount: payInfo.fee
                 , timeout_express: '10m'
             }).then(function (res) {
                 console.log(res);
+                res.out_trade_no = payInfo.out_trade_no;
+                res.app_id = '2015092200313107';
+
                 resolve(res);
             }).catch(function (err) {
                 console.log(err);
@@ -97,7 +100,7 @@ CmZYI/FCEa3/cNMW0QIDAQAB
         {
             accepts: [
                 {
-                    arg: 'p', type: 'object',
+                    arg: 'a', type: 'object',
                     http: function (ctx) {
                         var req = ctx.req;
                         return req.body;

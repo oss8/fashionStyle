@@ -310,6 +310,8 @@ module.exports = function (Fusers) {
         }
     );
 
+
+
     Fusers.paymentOrders = function (orderInfo, cb) {
         EWTRACE("paymentOrders Begin");
 
@@ -326,7 +328,7 @@ module.exports = function (Fusers) {
                 DoSQL(bsSQL).then(function () {
                     cb(null, { status: 1, "result": payResult });
                 }, function (err) {
-                    cb(err, { status: 1, "result": "" });
+                    cb(err, { status: 0, "result": "" });
                 })
             });
         }
@@ -336,19 +338,21 @@ module.exports = function (Fusers) {
                 var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment',payId = '" + payInfo.out_trade_no + "' where id = " + orderInfo.orderId;
 
                 DoSQL(bsSQL).then(function () {
-                    payResult.out_trade_no = payInfo.out_trade_no;
+
                     cb(null, { status: 1, "result": payResult });
                 }, function (err) {
-                    cb(err, { status: 1, "result": "" });
+                    cb(err, { status: 0, "result": "" });
                 })
             }, function (err) {
-                cb(err, { status: 1, "result": "" });
+                cb(err, { status: 0, "result": "" });
             })
         }
 
         EWTRACE("saveOrders End");
 
     };
+
+
 
     Fusers.remoteMethod(
         'paymentOrders',
@@ -369,7 +373,7 @@ module.exports = function (Fusers) {
         DoSQL(bsSQL).then(function (result) {
             cb(null, { status: 1, "result": result });
         }, function (err) {
-            cb(err, { status: 1, "result": "" });
+            cb(err, { status: 0, "result": "" });
         })
 
 

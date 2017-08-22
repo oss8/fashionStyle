@@ -7,26 +7,76 @@ module.exports = function (Wxpay) {
     var _ = require('underscore');
     var uuid = require('node-uuid');
 
+    var appid = 'wxb74654c82da12482';
+    var mch_id='1254501201';
+    var key = '1231314202eshineem2015weixinpays';
+    function raw(args) {
+        var keys = Object.keys(args);
+        keys = keys.sort()
+        var newArgs = {};
+        keys.forEach(function (key) {
+            newArgs[key] = args[key];
+        });
+        var string = '';
+        for (var k in newArgs) {
+            string += '&' + k + '=' + newArgs[k];
+        }
+        string = string.substr(1);
+        return string;
+    }
+
+    function paysignjs(appid, nonceStr, packages, mch_id , timeStamp, prepay_id) {
+        var ret = {
+            appid: appid,
+            noncestr: nonceStr,
+            package: packages,
+            partnerid : mch_id,
+            timestamp: timeStamp,
+            prepayid : prepay_id
+        };
+        var string = raw(ret);
+       
+        var crypto = require('crypto');
+        string = string + '&key=' + key;
+        var sign = crypto.createHash('md5').update(string, 'utf8').digest('hex');
+        return sign.toUpperCase();
+    }  
+    
+    function createTimeStamp() {
+        return parseInt(new Date().getTime() / 1000) + '';
+    }    
+
+    function createNonceStr() {
+        return Math.random().toString(36).substr(2, 15);
+    }
+
+
     Wxpay.WX_Pay = function (payInfo) {
         console.log("WX_Pay Begin");
         return new Promise(function (resolve, reject) {
             var WXPay = require('weixin-pay');
 
             var wxpay = WXPay({
-                appid: 'wxb74654c82da12482',
-                mch_id: '1254501201',
-                partner_key: '1231314202eshineem2015weixinpays', //微信商户平台API密钥
+                appid: appid,
+                mch_id: mch_id,
+                partner_key: key, //微信商户平台API密钥
                 pfx: '' //微信商户平台证书
             });
 
             var _out_trade_no = uuid.v4().replace(/-/g, "");
             payInfo.out_trade_no = _out_trade_no;
 
+
+            var _fee = payInfo.fee * 100;
+_fee = '1';
+
+            var _timestamp = Math.floor(Date.now()/1000)+"";
             wxpay.createUnifiedOrder({
                 body: '扫码支付测试',
                 out_trade_no: _out_trade_no,
-                total_fee: payInfo.fee * 100,
+                total_fee: _fee,
                 spbill_create_ip: '192.168.2.210',
+                timeStamp: _timestamp,
                 notify_url: 'http://style.man-kang.com/api/Wxpays/wxnotify',
                 trade_type: 'NATIVE',
                 product_id: '1234567890'
@@ -36,8 +86,27 @@ module.exports = function (Wxpay) {
                     console.log(err.message);
                     reject(err);
                 } else {
-                    console.log(result);
-                    resolve(result);
+
+                    var nonce_str = createNonceStr();
+                    var timeStamp = createTimeStamp();
+
+
+                    var prepay_id = result.prepay_id;
+                    //签名  
+                    var _paySignjs = paysignjs(appid, nonce_str, 'Sign=WXPay',mch_id, timeStamp, prepay_id);
+                    var args = {
+                        appId: appid,
+                        timeStamp: timeStamp,
+                        nonceStr: nonce_str,
+                        signType: "MD5",
+                        mch_id:mch_id,
+                        prepay_id: prepay_id,
+                        paySign: _paySignjs,
+                        out_trade_no: _out_trade_no
+                    };
+                    EWTRACEIFY(args);                    
+
+                    resolve(args);
                 }
             });
         });
