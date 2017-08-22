@@ -17,7 +17,7 @@ module.exports = function (AliPay) {
             const Alipay = require('alipay2');
 
             const alipay = new Alipay({
-                notify_url: process.env.wxNotifyURL + "AliPays/alnotify",
+                notify_url: process.env.payNotifyURL + "AliPays/alnotify",
                 appId: appid,
                 signType: 'RSA',
                 appKey: fs.readFileSync(path.join(__dirname, '../../config/privateKey.pub')),

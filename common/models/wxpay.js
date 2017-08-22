@@ -77,7 +77,7 @@ module.exports = function (Wxpay) {
                 out_trade_no: _out_trade_no,
                 total_fee: _fee,
                 spbill_create_ip: getIPAdress(),
-                notify_url: process.env.wxNotifyURL + 'Wxpays/wxnotify',
+                notify_url: process.env.payNotifyURL + 'Wxpays/wxnotify',
                 trade_type: 'NATIVE',
                 product_id: '1234567890'
             }, function (err, result) {
