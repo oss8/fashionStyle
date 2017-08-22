@@ -1,0 +1,2 @@
+The model "AccessToken" configures "belongsTo User-like models" relation with target model "User". However, the model "User" is not attached to the application and therefore cannot be used by this relation. This typically happens when the application has a custom custom User subclass, but does not fix AccessToken relations to use this new model.
+Learn more at http://ibm.biz/setup-loopback-auth
