@@ -4,12 +4,16 @@ module.exports = function (Wxpay) {
     var app = require('../../server/server');
     app.DisableSystemMethod(Wxpay);
 
+    require('dotenv').config({ path: './config/.env' });
+
     var _ = require('underscore');
     var uuid = require('node-uuid');
 
-    var appid = 'wxb74654c82da12482';
-    var mch_id='1254501201';
-    var key = '1231314202eshineem2015weixinpays';
+    var appid = process.env.wxAppID;
+    var mch_id= process.env.wxMchID;
+    var key = process.env.wxPartnerkey;
+
+
     function raw(args) {
         var keys = Object.keys(args);
         keys = keys.sort()
