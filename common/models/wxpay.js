@@ -70,7 +70,6 @@ module.exports = function (Wxpay) {
             var _out_trade_no = uuid.v4().replace(/-/g, "");
 
             var _fee = payInfo.fee * 100;
-            
             _fee = '1';
 
             wxpay.createUnifiedOrder({
@@ -92,9 +91,6 @@ module.exports = function (Wxpay) {
                     var timeStamp = createTimeStamp();
                     var prepay_id = result.prepay_id;
 
-                    //微信支付生成二维码，在此处返回
-                    //resolve(result);
-
                     //生成移动端app调用签名  
                     var _paySignjs = paysignjs(appid, nonce_str, 'Sign=WXPay', mch_id, timeStamp, prepay_id);
                     var args = {
@@ -105,7 +101,8 @@ module.exports = function (Wxpay) {
                         mch_id: mch_id,
                         prepay_id: prepay_id,
                         paySign: _paySignjs,
-                        out_trade_no: _out_trade_no
+                        out_trade_no: _out_trade_no,
+                        code_url : result.code_url  //微信支付生成二维码，在此处返回
                     };
                     EWTRACEIFY(args);
                     resolve(args);
