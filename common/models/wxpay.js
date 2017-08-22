@@ -10,7 +10,7 @@ module.exports = function (Wxpay) {
     var uuid = require('node-uuid');
 
     var appid = process.env.wxAppID;
-    var mch_id= process.env.wxMchID;
+    var mch_id = process.env.wxMchID;
     var key = process.env.wxPartnerkey;
 
 
@@ -29,34 +29,34 @@ module.exports = function (Wxpay) {
         return string;
     }
 
-    function paysignjs(appid, nonceStr, packages, mch_id , timeStamp, prepay_id) {
+    function paysignjs(appid, nonceStr, packages, mch_id, timeStamp, prepay_id) {
         var ret = {
             appid: appid,
             noncestr: nonceStr,
             package: packages,
-            partnerid : mch_id,
+            partnerid: mch_id,
             timestamp: timeStamp,
-            prepayid : prepay_id
+            prepayid: prepay_id
         };
         var string = raw(ret);
-       
+
         var crypto = require('crypto');
         string = string + '&key=' + key;
         var sign = crypto.createHash('md5').update(string, 'utf8').digest('hex');
         return sign.toUpperCase();
-    }  
-    
+    }
+
     function createTimeStamp() {
         return parseInt(new Date().getTime() / 1000) + '';
-    }    
+    }
 
     function createNonceStr() {
         return Math.random().toString(36).substr(2, 15);
     }
 
 
-    Wxpay.WX_Pay = function (payInfo) {
-        console.log("WX_Pay Begin");
+    Wxpay.wxPayment = function (payInfo) {
+        EWTRACE("wxPayment Begin");
         return new Promise(function (resolve, reject) {
             var WXPay = require('weixin-pay');
 
@@ -68,20 +68,17 @@ module.exports = function (Wxpay) {
             });
 
             var _out_trade_no = uuid.v4().replace(/-/g, "");
-            payInfo.out_trade_no = _out_trade_no;
-
 
             var _fee = payInfo.fee * 100;
-_fee = '1';
+            
+            _fee = '1';
 
-            var _timestamp = Math.floor(Date.now()/1000)+"";
             wxpay.createUnifiedOrder({
-                body: '扫码支付测试',
+                body: '杭州人马座科技有限公司',
                 out_trade_no: _out_trade_no,
                 total_fee: _fee,
-                spbill_create_ip: '192.168.2.210',
-                timeStamp: _timestamp,
-                notify_url: 'http://style.man-kang.com/api/Wxpays/wxnotify',
+                spbill_create_ip: getIPAdress(),
+                notify_url: process.env.wxNotifyURL + 'Wxpays/wxnotify',
                 trade_type: 'NATIVE',
                 product_id: '1234567890'
             }, function (err, result) {
@@ -93,31 +90,33 @@ _fee = '1';
 
                     var nonce_str = createNonceStr();
                     var timeStamp = createTimeStamp();
-
-
                     var prepay_id = result.prepay_id;
-                    //签名  
-                    var _paySignjs = paysignjs(appid, nonce_str, 'Sign=WXPay',mch_id, timeStamp, prepay_id);
+
+                    //微信支付生成二维码，在此处返回
+                    //resolve(result);
+
+                    //生成移动端app调用签名  
+                    var _paySignjs = paysignjs(appid, nonce_str, 'Sign=WXPay', mch_id, timeStamp, prepay_id);
                     var args = {
                         appId: appid,
                         timeStamp: timeStamp,
                         nonceStr: nonce_str,
                         signType: "MD5",
-                        mch_id:mch_id,
+                        mch_id: mch_id,
                         prepay_id: prepay_id,
                         paySign: _paySignjs,
                         out_trade_no: _out_trade_no
                     };
-                    EWTRACEIFY(args);                    
-
+                    EWTRACEIFY(args);
                     resolve(args);
+                    EWTRACE("wxPayment End");
                 }
             });
         });
     };
 
     Wxpay.remoteMethod(
-        'WX_Pay',
+        'wxPayment',
         {
             http: { verb: 'post' },
             description: '微信支付预下单',
@@ -144,12 +143,12 @@ _fee = '1';
 
             var bsSQL = "update cd_TstyleOrders set status = 'commit' where payid = '" + _orderid + "'";
 
-            DoSQL(bsSQL).then(function(){
+            DoSQL(bsSQL).then(function () {
                 var backXml = '<xml xmlns="eshine"><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[]]></return_msg></xml>';
                 cb(null, backXml, 'text/xml; charset=utf-8');
-            },function(err){
+            }, function (err) {
                 var backXml = '<xml xmlns="eshine"><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[]]></return_msg></xml>';
-                cb(null, backXml, 'text/xml; charset=utf-8');                
+                cb(null, backXml, 'text/xml; charset=utf-8');
             })
         }
 

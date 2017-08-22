@@ -323,7 +323,7 @@ module.exports = function (Fusers) {
 
             app.models.AliPay.Ali_Pay(payInfo).then(function (payResult) {
 
-                var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment',payId = '" + payInfo.out_trade_no + "' where id = " + orderInfo.orderId;
+                var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment',payId = '" + payResult.out_trade_no + "' where id = " + orderInfo.orderId;
 
                 DoSQL(bsSQL).then(function () {
                     cb(null, { status: 1, "result": payResult });
@@ -334,8 +334,8 @@ module.exports = function (Fusers) {
         }
         else {
 
-            app.models.Wxpay.WX_Pay(payInfo).then(function (payResult) {
-                var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment',payId = '" + payInfo.out_trade_no + "' where id = " + orderInfo.orderId;
+            app.models.Wxpay.wxPayment(payInfo).then(function (payResult) {
+                var bsSQL = "update cd_TstyleOrders set address ='" + orderInfo.address + "', zipcode = '" + orderInfo.zipCode + "',paytype = '" + orderInfo.payType + "', status = 'payment',payId = '" + payResult.out_trade_no + "' where id = " + orderInfo.orderId;
 
                 DoSQL(bsSQL).then(function () {
 
