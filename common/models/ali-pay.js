@@ -31,7 +31,7 @@ module.exports = function (AliPay) {
             _fee = 0.01;
 
             alipay.precreate({
-                subject: '杭州人马座科技有限公司'
+                subject: process.env.companyName
                 , out_trade_no: payInfo.out_trade_no
                 , total_amount: _fee
                 , timeout_express: '10m'

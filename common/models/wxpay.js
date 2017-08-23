@@ -73,7 +73,7 @@ module.exports = function (Wxpay) {
             _fee = '1';
 
             wxpay.createUnifiedOrder({
-                body: '杭州人马座科技有限公司',
+                body: process.env.companyName,
                 out_trade_no: _out_trade_no,
                 total_fee: _fee,
                 spbill_create_ip: getIPAdress(),
