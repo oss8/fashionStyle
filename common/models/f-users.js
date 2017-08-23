@@ -488,7 +488,7 @@ module.exports = function (Fusers) {
         }
     );
 
-    Fusers.requestOrders = function (token, cb) {
+    Fusers.requestOrders = function (orderInfo, token, cb) {
         EWTRACE("requestOrders Begin");
 
         var _openid = null;
@@ -522,14 +522,14 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询用户订单',
-            accepts: {
+            accepts: [{ arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"pageIndex":""}' },{
                 arg: 'token', type: 'string',
                 http: function (ctx) {
                     var req = ctx.req;
                     return req.headers.token;
                 },
                 description: '{"token":""}'
-            },
+            }],
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -620,12 +620,10 @@ module.exports = function (Fusers) {
 
 
         var pv = [];
-        var praiseList = { Result: 0 };
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.desginUserId + "' order by praise desc limit 5;";
-        pv.push(ExecuteSyncSQLResult(bsSQL, praiseList));
+
 
         var newList = { Result: 0 };
-        bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.desginUserId + "' order by adddate desc limit 5;";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.desginUserId + "' order by adddate desc limit " + (orderInfo.pageIndex - 1) * 10 + ",10;";
         pv.push(ExecuteSyncSQLResult(bsSQL, newList));
 
         Promise.all(pv).then(function () {
@@ -648,7 +646,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询设计师订单',
-            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"desginUserId":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"desginUserId":"","pageIndex":""}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
@@ -779,4 +777,45 @@ module.exports = function (Fusers) {
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
+
+    Fusers.requestUserAddress = function (userInfo, token, cb) {
+        EWTRACE("requestUserAddress Begin");
+
+        var _openid = null;
+        var OpenID = {};
+        try {
+            OpenID = GetOpenIDFromToken(token);
+            _openid = OpenID.userid;
+        } catch (err) {
+            cb(null, { status: 403, "result": "" });
+            return;
+        }
+
+        var bsSQL = "select * from cd_userAddress where userid = " + _openid + " limit "+ (orderInfo.pageIndex - 1) * 10 +" ,10;";
+
+        DoSQL(bsSQL).then(function (result) {
+            cb(null, { status: 1, "result": result });
+        }, function (err) {
+            cb(err, { status: 0, "result": "" });
+        });
+        EWTRACE("addUseraddress End");
+
+    };
+
+    Fusers.remoteMethod(
+        'requestUserAddress',
+        {
+            http: { verb: 'post' },
+            description: '查询用户收获地址',
+            accepts: [{ arg: 'userInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"pageIndex":""}' }, {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            }],
+            returns: { arg: 'userInfo', type: 'object', root: true }
+        }
+    );    
 };
