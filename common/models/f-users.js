@@ -595,7 +595,7 @@ module.exports = function (Fusers) {
     Fusers.requestSquareDesign = function (orderInfo, cb) {
         EWTRACE("requestOrdersFromDesign Begin");
 
-        var bsSQL = "select a.userid,a.mobile,a.name,a.headimage from cd_users a, (select userid from cd_tstyleorders order by praise desc limit 10) t where a.id = t.userid limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
+        var bsSQL = "select a.userid,a.mobile,a.name,a.headimage from cd_users a, (select userid from cd_tstyleorders order by praise desc limit 10) t where a.userid = t.userid limit " + orderInfo.pageIndex * 10 + ",10";
 
         DoSQL(bsSQL).then(function (result) {
             cb(null, { status: 1, "result": result });
@@ -610,7 +610,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询设计师排名',
-            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"pageIndex":""}' },
+            accepts: { arg: 'orderInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"pageIndex":0}' },
             returns: { arg: 'userInfo', type: 'object', root: true }
         }
     );
