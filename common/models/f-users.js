@@ -501,7 +501,7 @@ module.exports = function (Fusers) {
             return;
         }
 
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where userid = '" + _openid + "' order by adddate desc limit " + (orderInfo.pageIndex - 1) * 10 + ",10";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,address,zipcode,finishimage,fee from cd_tstyleorders where userid = '" + _openid + "' order by adddate desc limit " + orderInfo.pageIndex * 10 + ",10";
 
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
@@ -620,7 +620,7 @@ module.exports = function (Fusers) {
 
         var pv = [];
         var newList = { Result: 0 };
-        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.desginUserId + "' order by adddate desc limit " + (orderInfo.pageIndex - 1) * 10 + ",10;";
+        var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.desginUserId + "' order by adddate desc limit " + orderInfo.pageIndex * 10 + ",10;";
         pv.push(ExecuteSyncSQLResult(bsSQL, newList));
 
         Promise.all(pv).then(function () {
@@ -788,7 +788,7 @@ module.exports = function (Fusers) {
             return;
         }
 
-        var bsSQL = "select * from cd_userAddress where userid = " + _openid + " limit "+ (orderInfo.pageIndex - 1) * 10 +" ,10;";
+        var bsSQL = "select * from cd_userAddress where userid = " + _openid + " limit "+ orderInfo.pageIndex * 10 +" ,10;";
 
         DoSQL(bsSQL).then(function (result) {
             cb(null, { status: 1, "result": result });
