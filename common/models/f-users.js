@@ -119,9 +119,9 @@ module.exports = function (Fusers) {
                     cb(null, { status: 0, "result": "" });
                     return;
                 }
-
-                var accessKey = 'vDgqA_Gu6Vpz3eY--7_IQVoBQ8LE13y37rpM_GKS';
-                var secretKey = 'H-NzWzl3riHIntwj9KBFj3TmG_zPttLfd-EcPlKq';
+                require('dotenv').config({ path: './config/.env' });
+                var accessKey = process.env.qiniuAccessKey;
+                var secretKey = process.env.qiniuSecretKey;
                 var mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
                 var options = {
                     scope: 'tstyle',
@@ -618,10 +618,7 @@ module.exports = function (Fusers) {
     Fusers.requestDesignOrders = function (orderInfo, cb) {
         EWTRACE("requestDesignOrders Begin");
 
-
         var pv = [];
-
-
         var newList = { Result: 0 };
         var bsSQL = "select id,userId,Gender,baseId,styleContext as Context,addDate,baseName,title,praise,height,color,orderType,size,finishimage,fee from cd_tstyleorders where userid = '" + orderInfo.desginUserId + "' order by adddate desc limit " + (orderInfo.pageIndex - 1) * 10 + ",10;";
         pv.push(ExecuteSyncSQLResult(bsSQL, newList));
