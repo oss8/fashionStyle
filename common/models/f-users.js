@@ -646,7 +646,7 @@ module.exports = function (Fusers) {
 
         Promise.all(pv).then(function () {
 
-            var _result = _.union(praiseList.Result, newList.Result);
+            var _result = newList.Result;
 
             _result.forEach(function (item) {
                 item.styleContext = Buffer(item.Context, 'base64').toString();
