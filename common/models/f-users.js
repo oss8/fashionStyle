@@ -71,7 +71,7 @@ module.exports = function (Fusers) {
                 return;
             }
 
-            var bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
+            var bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where userid = '"+_info.userid+"'";
             DoSQL(bsSQL).then(function (UserInfo) {
 
                 getWeChatToken(UserInfo[0]).then(function (resultToken) {
@@ -113,7 +113,7 @@ module.exports = function (Fusers) {
 
         try {
             var _info = GetOpenIDFromToken(token);
-            var bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where mobile = '" + _info.mobile + "' and password = '" + _info.password + "'";
+            var bsSQL = "select userid,mobile,name,lastLogintime,password,headImage from cd_users where userid = '"+_info.userid+"'";
             DoSQL(bsSQL).then(function (UserInfo) {
                 if (UserInfo.length == 0) {
                     cb(null, { status: 0, "result": "" });
