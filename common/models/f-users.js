@@ -796,7 +796,7 @@ module.exports = function (Fusers) {
         }
     );
 
-    Fusers.requestUserAddress = function (userInfo, token, cb) {
+    Fusers.requestUserAddress = function (orderInfo, token, cb) {
         EWTRACE("requestUserAddress Begin");
 
         var _openid = null;
@@ -809,7 +809,7 @@ module.exports = function (Fusers) {
             return;
         }
 
-        var bsSQL = "select * from cd_userAddress where userid = " + _openid + " limit "+ orderInfo.pageIndex * 10 +" ,10;";
+        var bsSQL = "select * from cd_userAddress where userid = '" + _openid + "'";
 
         DoSQL(bsSQL).then(function (result) {
             cb(null, { status: 1, "result": result });
@@ -825,7 +825,7 @@ module.exports = function (Fusers) {
         {
             http: { verb: 'post' },
             description: '查询用户收获地址',
-            accepts: [{ arg: 'userInfo', http: { source: 'body' }, type: 'object', root: true, description: '{"pageIndex":""}' }, {
+            accepts: [ {
                 arg: 'token', type: 'string',
                 http: function (ctx) {
                     var req = ctx.req;
