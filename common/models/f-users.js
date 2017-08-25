@@ -796,7 +796,7 @@ module.exports = function (Fusers) {
         }
     );
 
-    Fusers.requestUserAddress = function (orderInfo, token, cb) {
+    Fusers.requestUserAddress = function ( token, cb) {
         EWTRACE("requestUserAddress Begin");
 
         var _openid = null;
