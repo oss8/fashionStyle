@@ -687,6 +687,10 @@ module.exports = function (Fusers) {
         var bsSQL = "select userid,name from cd_users where userid = '" + _openid + "'";
         pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
+
+        addressInfo = { Result: 0 };
+        var bsSQL = "select * from cd_userAdddress where userid = '" + _openid + "'";
+        pv.push(ExecuteSyncSQLResult(bsSQL, addressInfo));        
         Promise.all(pv).then(function () {
 
             if (UserInfo.Result.length == 0) {
@@ -698,6 +702,10 @@ module.exports = function (Fusers) {
 
             var isDefault = 0;
             if (!_.isUndefined(userInfo.isDefault) && userInfo.isDefault) {
+                isDefault = 1;
+            }
+
+            if ( addressInfo.length == 0 ){
                 isDefault = 1;
             }
 
