@@ -697,7 +697,7 @@ module.exports = function (Fusers) {
             bsSQL = "";
 
             var isDefault = 0;
-            if (userInfo.isDefault) {
+            if (!_.isUndefined(userInfo.isDefault) && userInfo.isDefault) {
                 isDefault = 1;
             }
 
