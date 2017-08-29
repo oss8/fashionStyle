@@ -616,7 +616,6 @@ module.exports = function (Fusers) {
                 cb(err, { status: 0, "result": "" });
             });
 
-            cb(null, { status: 1, "result": result });
         }, function (err) {
             cb(err, { status: 0, "result": "" });
         });
