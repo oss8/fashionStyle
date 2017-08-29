@@ -727,7 +727,7 @@ module.exports = function (Fusers) {
         pv.push(ExecuteSyncSQLResult(bsSQL, UserInfo));
 
 
-        addressInfo = { Result: 0 };
+        var addressInfo = { Result: 0 };
         var bsSQL = "select * from cd_userAdddress where userid = '" + _openid + "'";
         pv.push(ExecuteSyncSQLResult(bsSQL, addressInfo));        
         Promise.all(pv).then(function () {
