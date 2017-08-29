@@ -550,7 +550,20 @@ module.exports = function (Fusers) {
                 result.forEach(function (item) {
                     item.styleContext = Buffer(item.Context, 'base64').toString();
                 })
-                cb(null, { status: 1, "result": result[0] });
+
+                bsSQL = "SELECT userId,name,headImage FROM cd_users where userId = " + result[0].userId;
+                DoSQL(bsSQL).then(function (userInfo) {
+                    result[0].UserName = '';
+                    result[0].headerImage = '';
+                    if ( userInfo.length > 0 ){
+                        result[0].UserName = userInfo[0].name;
+                        result[0].headerImage = userInfo[0].headImage;
+                    }
+                    cb(null, { status: 1, "result": result[0] });
+                },function(err){
+                    cb(err, { status: 0, "result": "" });
+                });
+                
             } else {
                 cb(null, { status: 0, "result": "未找到此订单" });
             }
