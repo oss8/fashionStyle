@@ -593,8 +593,29 @@ module.exports = function (Fusers) {
         DoSQL(bsSQL).then(function (result) {
             result.forEach(function (item) {
                 item.styleContext = Buffer(item.Context, 'base64').toString();
-
             })
+
+            bsSQL = "SELECT userId,name,headImage FROM cd_users";
+            DoSQL(bsSQL).then(function (userInfo) {
+
+                result.forEach(function(item){
+                    item.UserName = '';
+                    item.headerImage = '';
+
+                    var find = _.find(userInfo, function(fitem){
+                        return fitem.userId == item.userId;
+                    })
+                    if ( !_.isUndefined(find) ){
+                        item.UserName = find.name;
+                        item.headerImage = find.headImage;
+                    }
+                })
+
+                cb(null, { status: 1, "result": result});
+            },function(err){
+                cb(err, { status: 0, "result": "" });
+            });
+
             cb(null, { status: 1, "result": result });
         }, function (err) {
             cb(err, { status: 0, "result": "" });
