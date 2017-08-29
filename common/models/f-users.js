@@ -372,7 +372,7 @@ module.exports = function (Fusers) {
 
         DoSQL(bsSQL).then(function (result) {
             if ( result.length > 0 ){
-                cb(null, { status: 1, "result": result });
+                cb(null, { status: 1, "result": result[0] });
             }
             else{
                 cb(new Error('未找到对应订单'), { status: 1, "result": "" });
