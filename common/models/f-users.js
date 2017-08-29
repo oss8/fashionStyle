@@ -371,7 +371,13 @@ module.exports = function (Fusers) {
         var bsSQL = "select status from cd_TstyleOrders where payid = '" + orderInfo.paymentId + "'";
 
         DoSQL(bsSQL).then(function (result) {
-            cb(null, { status: 1, "result": result });
+            if ( result.length > 0 ){
+                cb(null, { status: 1, "result": result });
+            }
+            else{
+                cb(new Error('未找到对应订单'), { status: 1, "result": "" });
+            }
+            
         }, function (err) {
             cb(err, { status: 0, "result": "" });
         })
