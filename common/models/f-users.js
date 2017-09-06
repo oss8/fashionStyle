@@ -467,7 +467,51 @@ module.exports = function (Fusers) {
     );
 
 
+    Fusers.requestOrderPraise = function (orderInfo, token, cb) {
+        EWTRACE("requestOrderPraise Begin");
 
+        var _openid = null;
+        var OpenID = {};
+        try {
+            OpenID = GetOpenIDFromToken(token);
+            _openid = OpenID.userid;
+        } catch (err) {
+            cb(null, { status: 403, "result": "" });
+            return;
+        }
+
+        var bsSQL = "SELECT * FROM cd_praiselist where userid = " + OpenID.userid + " and orderid = " + orderInfo.orderId;
+
+        DoSQL(bsSQL).then(function (praiselist) {
+            if (praiselist.length == 0) {
+                cb(null, { status: 1, "result": 0 });
+            }
+            else {
+                cb(null, { status: 1, "result": 1 });
+            }
+        }, function (err) {
+            cb(err, { status: 0, "result": "" });
+        });
+        EWTRACE("requestOrderPraise End");
+
+    };
+
+    Fusers.remoteMethod(
+        'requestOrderPraise',
+        {
+            http: { verb: 'post' },
+            description: '点赞',
+            accepts: [{ arg: 'orderInfo', http: { source: 'body' }, type: 'object', description: '{"orderId":""}' }, {
+                arg: 'token', type: 'string',
+                http: function (ctx) {
+                    var req = ctx.req;
+                    return req.headers.token;
+                },
+                description: '{"token":""}'
+            }],
+            returns: { arg: 'userInfo', type: 'object', root: true }
+        }
+    );
 
 
     Fusers.OrderPraise = function (orderInfo, cb) {
